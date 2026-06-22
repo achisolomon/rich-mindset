@@ -68,6 +68,7 @@
     flex:0 0 auto;
   }
   .dot:hover{border-color:var(--blue); transform:scale(1.08)}
+  .dot:focus-visible{outline:2px solid var(--blue); outline-offset:2px}
   .dot.sel{background:var(--navy); border-color:var(--navy); box-shadow:0 0 0 4px rgba(31,56,100,.15)}
   .dot.sel::after{content:"✓"; color:#fff; font-size:14px; font-weight:700}
   .item.answered{border-color:#cdd9ea; background:#fbfcff}
@@ -77,6 +78,7 @@
     .scale-track{gap:8px}
     .cap{width:26px; height:26px; font-size:12.5px}
     .dots-bar{min-width:0}
+    .dots-bar .bar-line{inset-inline:15px}
     .dot{width:30px; height:30px}
     /* results breakdown */
     .legend-rev{grid-template-columns:1fr; gap:5px}
@@ -98,6 +100,9 @@
   .legend-rev{display:grid; grid-template-columns:1fr 1fr; gap:6px; font-size:13px; margin-top:4px}
   .legend-rev .l{color:var(--red); font-weight:600}
   .legend-rev .r{color:var(--blue); font-weight:600; text-align:left}
+  .band-key{display:flex; flex-wrap:wrap; gap:6px 12px; margin-top:10px; font-size:12px; color:#3a4452}
+  .band-key span{display:inline-flex; align-items:center; gap:5px}
+  .band-key i{width:11px; height:11px; border-radius:3px; flex:0 0 auto}
   .chart-box{max-width:520px; margin:10px auto 0}
   .note{font-size:13px; color:var(--muted); text-align:center; margin-top:10px}
   .hidden{display:none}
@@ -148,6 +153,13 @@
       <div class="legend-rev">
         <span class="l">► ניסוח א׳ = מיינדסט עני</span>
         <span class="r">ניסוח ב׳ = מיינדסט עשיר ◄</span>
+      </div>
+      <div class="band-key">
+        <span><i style="background:#c0392b"></i>עני דומיננטי</span>
+        <span><i style="background:#e08a3c"></i>נטייה לעני</span>
+        <span><i style="background:#6b7480"></i>מאוזן</span>
+        <span><i style="background:#3d7ab8"></i>נטייה לעשיר</span>
+        <span><i style="background:#1f6f43"></i>עשיר דומיננטי</span>
       </div>
       <div id="breakdown" style="margin-top:14px"></div>
     </div>
@@ -301,6 +313,9 @@ function updateProgress(){
     done<totalItems ? ('נותרו '+(totalItems-done)+' שאלות למילוי') : 'מילאת הכול! אפשר לראות תוצאות.';
 }
 
+// Bands are symmetric around the 3.0 midpoint. Boundary convention: a value
+// belongs to the higher band at its lower edge (<=2 poor-dominant, [2.75,3.25]
+// neutral, >=4 rich-dominant); so exactly 4.0 is "dominant rich", mirroring 2.0.
 function bandLabel(v){
   if(v<=2) return ['עני דומיננטי','#c0392b'];
   if(v<2.75) return ['נטייה לעני','#e08a3c'];
