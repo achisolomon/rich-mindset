@@ -310,8 +310,9 @@ function updateProgress(){
 
 function bandLabel(v){
   if(v<=2) return ['עני דומיננטי','#c0392b'];
-  if(v<=3) return ['נטייה לעני','#e08a3c'];
-  if(v<=4) return ['נטייה לעשיר','#3d7ab8'];
+  if(v<2.75) return ['נטייה לעני','#e08a3c'];
+  if(v<=3.25) return ['מאוזן','#6b7480'];
+  if(v<4) return ['נטייה לעשיר','#3d7ab8'];
   return ['עשיר דומיננטי','#1f6f43'];
 }
 
