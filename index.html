@@ -432,10 +432,18 @@ h2.cat-title {
 
 .res-head {
   display: flex;
-  justify-content: space-between;
   align-items: center;
   font-size: 14px;
   margin-bottom: 6px;
+  gap: 10px;
+}
+
+.res-headtext {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   gap: 8px;
 }
 
@@ -473,6 +481,109 @@ h2.cat-title {
   background: var(--ink);
   border-radius: 3px;
   box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+}
+
+/* === EXPANDABLE CATEGORY (clickable breakdown rows) === */
+.bd-hint {
+  font-size: 12px;
+  color: var(--muted);
+  text-align: center;
+  font-style: italic;
+  margin-top: 12px;
+}
+
+.res-head {
+  width: 100%;
+  background: none;
+  border: none;
+  font-family: inherit;
+  color: inherit;
+  cursor: pointer;
+  text-align: right;
+  padding: 6px 6px;
+  border-radius: 10px;
+  transition: background 0.15s;
+}
+
+.res-head:hover { background: var(--line-light); }
+
+.res-head:focus-visible {
+  outline: 2px solid var(--blue);
+  outline-offset: 1px;
+}
+
+.res-chevron {
+  flex-shrink: 0;
+  width: 9px;
+  height: 9px;
+  border-right: 2px solid var(--muted);
+  border-bottom: 2px solid var(--muted);
+  transform: rotate(45deg) translate(-1px, -1px);
+  transition: transform 0.2s;
+}
+
+.res-row.open .res-chevron { transform: rotate(-135deg) translate(-1px, -1px); }
+
+.cat-detail {
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  animation: catFade 0.2s ease-out;
+}
+
+@keyframes catFade {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.cat-q {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 12px;
+  background: var(--bg);
+}
+
+.cat-stmt {
+  display: flex;
+  gap: 8px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--muted);
+  padding: 7px 10px;
+  border-radius: 8px;
+  border: 1.5px solid transparent;
+  margin-bottom: 6px;
+}
+
+.cat-stmt-label {
+  font-weight: 800;
+  font-size: 11px;
+  flex-shrink: 0;
+  opacity: 0.7;
+}
+
+.cat-stmt.a.picked {
+  background: #e3eaf4;
+  border-color: #1f3864;
+  color: #1f3864;
+}
+
+.cat-stmt.b.picked {
+  background: #e4efe9;
+  border-color: #1a5e36;
+  color: #1a5e36;
+}
+
+.cat-stmt.a.picked .cat-stmt-label { color: #1f3864; opacity: 1; }
+.cat-stmt.b.picked .cat-stmt-label { color: #1a5e36; opacity: 1; }
+
+.cat-pick {
+  margin-top: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--ink);
+  text-align: center;
 }
 
 /* === LEGEND === */
@@ -587,7 +698,7 @@ h2.cat-title {
 
   .score-num { font-size: 60px; }
 
-  .res-head { flex-direction: column; align-items: flex-start; gap: 4px; }
+  .res-headtext { flex-direction: column; align-items: flex-start; gap: 4px; }
 }
 
 /* === COARSE POINTER (touch devices) === */
@@ -689,6 +800,7 @@ h2.cat-title {
         <button class="sort-btn" id="sortRich"    onclick="setSortMode('rich')"    aria-pressed="false">מיינדסט עשיר ↑</button>
         <button class="sort-btn" id="sortPoor"    onclick="setSortMode('poor')"    aria-pressed="false">מיינדסט עני ↑</button>
       </div>
+      <p class="bd-hint">לחצו על קטגוריה כדי לראות את כל התשובות שבה ↓</p>
       <div id="breakdown" style="margin-top:18px;"></div>
     </div>
 
@@ -1065,19 +1177,80 @@ function renderBreakdown() {
   else if (sortMode === 'poor') items.sort((a, b) => a.v - b.v);
 
   items.forEach(({ cat, ci, v }) => {
-    const band = bandFor(v);
-    const row  = document.createElement('div');
+    const band     = bandFor(v);
+    const detailId = `catDetail_${ci}`;
+
+    const row = document.createElement('div');
     row.className = 'res-row';
-    row.innerHTML =
-      `<div class="res-head">
-        <span class="res-name">${ci + 1}. ${cat.name}</span>
-        <span class="res-val" style="color:${band.color};background:${band.bg};">${v.toFixed(2)} · ${band.label}</span>
-      </div>
-      <div class="track" aria-hidden="true">
-        <div class="marker" style="right:calc(${((v - 1) / 3 * 100)}% - 2px)"></div>
-      </div>`;
+
+    /* Clickable header that expands the full category results */
+    const head = document.createElement('button');
+    head.type = 'button';
+    head.className = 'res-head';
+    head.setAttribute('aria-expanded', 'false');
+    head.setAttribute('aria-controls', detailId);
+    head.innerHTML =
+      `<span class="res-chevron" aria-hidden="true"></span>
+       <span class="res-headtext">
+         <span class="res-name">${ci + 1}. ${cat.name}</span>
+         <span class="res-val" style="color:${band.color};background:${band.bg};">${v.toFixed(2)} · ${band.label}</span>
+       </span>`;
+
+    const track = document.createElement('div');
+    track.className = 'track';
+    track.setAttribute('aria-hidden', 'true');
+    track.innerHTML = `<div class="marker" style="right:calc(${((v - 1) / 3 * 100)}% - 2px)"></div>`;
+
+    const detail = document.createElement('div');
+    detail.className = 'cat-detail hidden';
+    detail.id = detailId;
+    detail.appendChild(buildCatDetail(cat, ci));
+
+    head.addEventListener('click', () => {
+      const open = detail.classList.toggle('hidden') === false;
+      head.setAttribute('aria-expanded', open ? 'true' : 'false');
+      row.classList.toggle('open', open);
+    });
+
+    row.appendChild(head);
+    row.appendChild(track);
+    row.appendChild(detail);
     bd.appendChild(row);
   });
+}
+
+/* Builds the per-question detail for one category (statements + chosen answer),
+   highlighting the side the user leaned toward. */
+function buildCatDetail(cat, ci) {
+  const frag = document.createDocumentFragment();
+
+  cat.items.forEach((pair, ii) => {
+    const v     = answers[`${ci}_${ii}`];
+    const aSel  = v >= 1 && v <= 2;   /* leaned to ניסוח א׳ */
+    const bSel  = v >= 3 && v <= 4;   /* leaned to ניסוח ב׳ */
+
+    const q = document.createElement('div');
+    q.className = 'cat-q';
+
+    const sa = document.createElement('div');
+    sa.className = 'cat-stmt a' + (aSel ? ' picked' : '');
+    sa.innerHTML = `<span class="cat-stmt-label" aria-hidden="true">א׳</span><span>${pair[0]}</span>`;
+
+    const sb = document.createElement('div');
+    sb.className = 'cat-stmt b' + (bSel ? ' picked' : '');
+    sb.innerHTML = `<span class="cat-stmt-label" aria-hidden="true">ב׳</span><span>${pair[1]}</span>`;
+
+    const pick = document.createElement('div');
+    pick.className = 'cat-pick';
+    pick.textContent = v ? `תשובה: ${ANSWER_LABELS[v - 1]} (${v})` : 'תשובה: לא נענה';
+
+    q.appendChild(sa);
+    q.appendChild(sb);
+    q.appendChild(pick);
+    frag.appendChild(q);
+  });
+
+  return frag;
 }
 
 function drawRadar(vals) {
