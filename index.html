@@ -595,11 +595,23 @@ h2.cat-title {
   .dot { min-width: 44px; min-height: 44px; }
 }
 
+/* === ANSWERS DETAIL (print only) === */
+.answers-print { display: none; }
+.ans-cat {
+  font-size: 15px; font-weight: 700; color: var(--navy);
+  margin: 18px 0 8px; padding-bottom: 4px; border-bottom: 2px solid var(--navy);
+}
+.ans-cat:first-child { margin-top: 0; }
+.ans-row { padding: 8px 0; border-bottom: 1px solid #e2e6ea; break-inside: avoid; }
+.ans-stmts { display: flex; flex-direction: column; gap: 2px; font-size: 13px; color: var(--ink-2); line-height: 1.5; }
+.ans-pick { font-size: 13px; font-weight: 700; color: var(--ink); margin-top: 5px; }
+
 /* === PRINT === */
 @media print {
   .progress-wrap, #intro, #quiz, .btn, .sort-bar,
   .results-tip, .coaching-cta { display: none !important; }
   #results { display: block !important; }
+  .answers-print { display: block !important; }
   body { background: #fff; color: #000; }
   .card { box-shadow: none; border: 1px solid #ccc; break-inside: avoid; }
   .score-num { font-size: 60px; }
@@ -685,6 +697,11 @@ h2.cat-title {
       <div class="chart-box">
         <canvas id="radar" role="img" aria-label="גרף מכ״מ של פרופיל המיינדסט לפי קטגוריות"></canvas>
       </div>
+    </div>
+
+    <div class="card answers-print" aria-label="פירוט התשובות">
+      <p class="chart-section-title">פירוט התשובות שלך</p>
+      <div id="answersDetail"></div>
     </div>
 
     <div class="card coaching-cta" style="text-align:center;">
@@ -979,8 +996,54 @@ function showResults() {
 
   lastCatAvgs = catAvgs;
   renderBreakdown();
+  renderAnswers();
   drawRadar(catAvgs);
   window.scrollTo(0, 0);
+}
+
+const ANSWER_LABELS = [
+  'קרוב מאוד לניסוח א׳',
+  'קרוב לניסוח א׳',
+  'באמצע',
+  'קרוב לניסוח ב׳',
+  'קרוב מאוד לניסוח ב׳',
+];
+
+function renderAnswers() {
+  const box = document.getElementById('answersDetail');
+  box.innerHTML = '';
+
+  CATS.forEach((cat, ci) => {
+    const h = document.createElement('h3');
+    h.className = 'ans-cat';
+    h.textContent = `${ci + 1}. ${cat.name}`;
+    box.appendChild(h);
+
+    cat.items.forEach((pair, ii) => {
+      const v = answers[`${ci}_${ii}`];
+      const row = document.createElement('div');
+      row.className = 'ans-row';
+
+      const stmts = document.createElement('div');
+      stmts.className = 'ans-stmts';
+      const sa = document.createElement('span');
+      sa.textContent = `א׳: ${pair[0]}`;
+      const sb = document.createElement('span');
+      sb.textContent = `ב׳: ${pair[1]}`;
+      stmts.appendChild(sa);
+      stmts.appendChild(sb);
+
+      const pick = document.createElement('div');
+      pick.className = 'ans-pick';
+      pick.textContent = v
+        ? `תשובה: ${ANSWER_LABELS[v - 1]} (${v})`
+        : 'תשובה: לא נענה';
+
+      row.appendChild(stmts);
+      row.appendChild(pick);
+      box.appendChild(row);
+    });
+  });
 }
 
 function setSortMode(mode) {
