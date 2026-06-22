@@ -52,6 +52,9 @@
   .stmt{font-size:14.5px; color:#26313f}
   .stmt.right{text-align:right}
   .stmt.left{text-align:left}
+  .stmt::before{font-weight:800; color:var(--navy); font-size:12.5px; letter-spacing:.2px}
+  .stmt.right::before{content:"א׳ · "}
+  .stmt.left::before{content:"ב׳ · "}
   .dots{display:flex; gap:10px; align-items:center; justify-content:center}
   .dot{
     width:30px; height:30px; border-radius:50%; border:2px solid #b9c2cf; background:#fff;
@@ -63,11 +66,17 @@
   .dot.sel{background:var(--navy); border-color:var(--navy)}
   .dot.sel::after{content:"✓"; color:#fff; font-size:15px; font-weight:700}
   .item.answered{border-color:#cdd9ea; background:#fbfcff}
-  .scale-hint{display:flex; justify-content:space-between; font-size:11px; color:#9aa3af; margin-top:7px}
+  .scale-wrap{display:flex; flex-direction:column; align-items:center}
+  .scale-hint{display:none; width:100%; justify-content:space-between; font-size:12px; color:var(--muted); margin-top:8px; font-weight:600}
   @media(max-width:640px){
-    .scale-row{grid-template-columns:1fr; gap:8px; text-align:center}
-    .stmt.right,.stmt.left{text-align:center}
+    .scale-row{grid-template-columns:1fr; gap:10px; text-align:center}
+    .stmt.right,.stmt.left{text-align:center; background:#f6f8fb; border:1px solid var(--line); border-radius:10px; padding:10px 12px}
+    .stmt::before{display:block; margin-bottom:3px}
+    .scale-wrap{width:fit-content; margin:0 auto}
+    .scale-hint{display:flex}
+    .dots{gap:14px}
     .dot{width:34px;height:34px}
+    .dot:nth-child(1),.dot:nth-child(5){width:40px;height:40px}
   }
   /* results */
   .score-hero{text-align:center; padding:6px 0 4px}
@@ -250,6 +259,7 @@ function buildQuiz(){
       const row=document.createElement('div'); row.className='scale-row';
       const a=document.createElement('div'); a.className='stmt right'; a.textContent=pair[0];
       const b=document.createElement('div'); b.className='stmt left'; b.textContent=pair[1];
+      const scaleWrap=document.createElement('div'); scaleWrap.className='scale-wrap';
       const dots=document.createElement('div'); dots.className='dots';
       for(let v=1;v<=5;v++){
         const d=document.createElement('div'); d.className='dot'; d.dataset.k=key; d.dataset.v=v;
@@ -257,11 +267,11 @@ function buildQuiz(){
         d.onclick=()=>pick(key,v);
         dots.appendChild(d);
       }
-      row.appendChild(a); row.appendChild(dots); row.appendChild(b);
-      item.appendChild(row);
       const hint=document.createElement('div'); hint.className='scale-hint';
-      hint.innerHTML='<span>קרוב לניסוח א׳</span><span>קרוב לניסוח ב׳</span>';
-      item.appendChild(hint);
+      hint.innerHTML='<span>↑ קרוב לניסוח א׳</span><span>קרוב לניסוח ב׳ ↑</span>';
+      scaleWrap.appendChild(dots); scaleWrap.appendChild(hint);
+      row.appendChild(a); row.appendChild(scaleWrap); row.appendChild(b);
+      item.appendChild(row);
       box.appendChild(item);
     });
   });
