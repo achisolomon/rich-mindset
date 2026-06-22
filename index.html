@@ -86,6 +86,10 @@
   .note{font-size:13px; color:var(--muted); text-align:center; margin-top:10px}
   .hidden{display:none}
   .toprev{font-size:12px;color:var(--muted);text-align:center;margin-top:14px}
+  .sort-bar{display:flex;align-items:center;gap:6px;margin-top:10px;flex-wrap:wrap}
+  .sort-btn{border:1.5px solid #b9c2cf;background:#fff;border-radius:8px;padding:5px 12px;font-size:13px;font-family:inherit;cursor:pointer;transition:.12s;color:var(--ink)}
+  .sort-btn:hover{border-color:var(--blue);color:var(--blue)}
+  .sort-btn.active{background:var(--navy);color:#fff;border-color:var(--navy)}
 </style>
 </head>
 <body>
@@ -132,6 +136,12 @@
       <div class="legend-rev">
         <span class="l">► ניסוח א׳ = מיינדסט עני</span>
         <span class="r">ניסוח ב׳ = מיינדסט עשיר ◄</span>
+      </div>
+      <div class="sort-bar">
+        <span style="font-size:13px;color:var(--muted);margin-left:8px">מיון:</span>
+        <button class="sort-btn active" id="sortDefault" onclick="setSortMode('default')">לפי סדר</button>
+        <button class="sort-btn" id="sortRich" onclick="setSortMode('rich')">מיינדסט עשיר ↑</button>
+        <button class="sort-btn" id="sortPoor" onclick="setSortMode('poor')">מיינדסט עני ↑</button>
       </div>
       <div id="breakdown" style="margin-top:14px"></div>
     </div>
@@ -216,6 +226,8 @@ let answers = {}; // key "ci_ii" -> 1..5
 let totalItems = 0;
 CATS.forEach(c=>totalItems+=c.items.length);
 let radarChart=null;
+let lastCatAvgs=[];
+let sortMode='default';
 
 function start(){
   document.getElementById('intro').classList.add('hidden');
@@ -301,9 +313,27 @@ function showResults(){
   tn.textContent=total.toFixed(1).replace('.0',''); tn.style.color=tc;
   const tlab=document.getElementById('totalLabel'); tlab.textContent=tl; tlab.style.color=tc;
 
+  lastCatAvgs = catAvgs;
+  renderBreakdown();
+  drawRadar(catAvgs);
+  window.scrollTo(0,0);
+}
+
+function setSortMode(mode){
+  sortMode=mode;
+  ['default','rich','poor'].forEach(m=>{
+    document.getElementById('sort'+m.charAt(0).toUpperCase()+m.slice(1)).classList.toggle('active',m===mode);
+  });
+  renderBreakdown();
+}
+
+function renderBreakdown(){
   const bd=document.getElementById('breakdown'); bd.innerHTML='';
-  CATS.forEach((cat,ci)=>{
-    const v=catAvgs[ci]; const [lbl,col]=bandLabel(v);
+  let items=CATS.map((cat,ci)=>({cat,ci,v:lastCatAvgs[ci]}));
+  if(sortMode==='rich') items.sort((a,b)=>b.v-a.v);
+  else if(sortMode==='poor') items.sort((a,b)=>a.v-b.v);
+  items.forEach(({cat,ci,v})=>{
+    const [lbl,col]=bandLabel(v);
     const row=document.createElement('div'); row.className='res-row';
     row.innerHTML=
       '<div class="res-head"><span class="res-name">'+(ci+1)+'. '+cat.name+'</span>'+
@@ -311,9 +341,6 @@ function showResults(){
       '<div class="track"><div class="marker" style="right:calc('+((v-1)/4*100)+'% - 2px)"></div></div>';
     bd.appendChild(row);
   });
-
-  drawRadar(catAvgs);
-  window.scrollTo(0,0);
 }
 
 function drawRadar(vals){
@@ -322,7 +349,7 @@ function drawRadar(vals){
   radarChart=new Chart(ctx,{
     type:'radar',
     data:{
-      labels:CATS.map((c,i)=>(i+1)),
+      labels:CATS.map(c=>c.name.length>12 ? c.name.match(/.{1,12}(\s|$)/g).map(s=>s.trim()) : c.name),
       datasets:[{
         label:'הציון שלי',
         data:vals,
@@ -336,7 +363,7 @@ function drawRadar(vals){
     options:{
       responsive:true,
       scales:{r:{min:0,max:5,ticks:{stepSize:1,backdropColor:'transparent'},
-        pointLabels:{font:{size:13,weight:'600'}}}},
+        pointLabels:{font:{size:10,weight:'600'}}}},
       plugins:{legend:{display:false},
         tooltip:{callbacks:{title:(it)=>CATS[it[0].dataIndex].name,
           label:(it)=>'ציון: '+it.raw}}}
