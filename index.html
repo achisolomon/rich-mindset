@@ -290,10 +290,18 @@ function buildQuiz(){
       const bar=document.createElement('div'); bar.className='dots-bar';
       const line=document.createElement('div'); line.className='bar-line'; bar.appendChild(line);
       const dots=document.createElement('div'); dots.className='dots';
+      dots.setAttribute('role','radiogroup');
+      dots.setAttribute('aria-label','בחירה בין '+pair[0]+' (ניסוח א׳) לבין '+pair[1]+' (ניסוח ב׳)');
       for(let v=1;v<=5;v++){
+        const label=v===1?'הכי קרוב לניסוח א׳':v===2?'נוטה לניסוח א׳':v===3?'באמצע':v===4?'נוטה לניסוח ב׳':'הכי קרוב לניסוח ב׳';
         const d=document.createElement('div'); d.className='dot'; d.dataset.k=key; d.dataset.v=v;
-        d.title=(v===1?'קרוב לניסוח א׳':v===5?'קרוב לניסוח ב׳':v===3?'באמצע':'');
+        d.title=label;
+        d.setAttribute('role','radio');
+        d.setAttribute('aria-checked','false');
+        d.setAttribute('aria-label',v+' מתוך 5 — '+label);
+        d.tabIndex=v===1?0:-1;          // roving tabindex: only one dot per row is tab-reachable
         d.onclick=()=>pick(key,v);
+        d.onkeydown=onDotKey;
         dots.appendChild(d);
       }
       bar.appendChild(dots);
@@ -312,9 +320,35 @@ function pick(key,v){
   const item=document.getElementById('item_'+key);
   item.classList.add('answered');
   item.querySelectorAll('.dot').forEach(d=>{
-    d.classList.toggle('sel', +d.dataset.v===v);
+    const sel=+d.dataset.v===v;
+    d.classList.toggle('sel', sel);
+    d.setAttribute('aria-checked', sel?'true':'false');
+    d.tabIndex=sel?0:-1;               // keep the checked dot as the row's tab stop
   });
   updateProgress();
+}
+
+// Keyboard support for the dot radiogroup (ARIA radio pattern: arrows move and
+// select, Space/Enter selects). Arrows are RTL-aware so ←/→ track the visual row.
+function onDotKey(e){
+  const dot=e.currentTarget, key=dot.dataset.k, cur=+dot.dataset.v;
+  const rtl=getComputedStyle(dot.parentNode).direction==='rtl';
+  let next;
+  switch(e.key){
+    case 'ArrowUp':    next=cur-1; break;
+    case 'ArrowDown':  next=cur+1; break;
+    case 'ArrowLeft':  next=rtl?cur+1:cur-1; break;
+    case 'ArrowRight': next=rtl?cur-1:cur+1; break;
+    case 'Home':       next=1; break;
+    case 'End':        next=5; break;
+    case ' ': case 'Enter': e.preventDefault(); pick(key,cur); return;
+    default: return;
+  }
+  e.preventDefault();
+  next=Math.max(1,Math.min(5,next));
+  pick(key,next);
+  const target=dot.parentNode.querySelector('.dot[data-v="'+next+'"]');
+  if(target) target.focus();
 }
 
 function updateProgress(){
