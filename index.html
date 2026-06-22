@@ -605,6 +605,40 @@ h2.cat-title {
   .score-num { font-size: 60px; }
   .chart-box { max-width: 400px; }
 }
+/* Reflection step */
+.reflect-opts { display: flex; flex-direction: column; gap: 12px; margin-top: 18px; }
+.reflect-opt {
+  display: flex; align-items: flex-start; gap: 12px;
+  text-align: right; width: 100%;
+  padding: 16px 18px;
+  border: 2px solid var(--card-border, rgba(31,56,100,0.14));
+  border-radius: 14px;
+  background: #fff;
+  cursor: pointer;
+  font-size: 14.5px; line-height: 1.6; color: var(--ink-2);
+  transition: border-color 0.15s, background 0.15s, box-shadow 0.15s;
+}
+.reflect-opt:hover { border-color: var(--blue, #2e5496); background: rgba(31,56,100,0.03); }
+.reflect-opt:focus-visible { outline: none; box-shadow: 0 0 0 3px var(--focus-ring, rgba(46,84,150,0.35)); }
+.reflect-opt[aria-checked="true"] { border-color: var(--navy); background: rgba(31,56,100,0.06); box-shadow: 0 2px 10px rgba(31,56,100,0.12); }
+.reflect-opt .ro-dot {
+  flex: 0 0 auto; width: 20px; height: 20px; margin-top: 1px;
+  border-radius: 50%; border: 2px solid var(--card-border, rgba(31,56,100,0.3));
+  display: inline-block; position: relative; transition: border-color 0.15s;
+}
+.reflect-opt[aria-checked="true"] .ro-dot { border-color: var(--navy); }
+.reflect-opt[aria-checked="true"] .ro-dot::after {
+  content: ''; position: absolute; inset: 3px; border-radius: 50%; background: var(--navy);
+}
+
+/* Clarity indicator */
+.clarity { font-size: 13px; color: var(--ink-2); margin-top: 12px; line-height: 1.5; }
+.clarity .clarity-val { font-weight: 700; }
+
+/* Reflection note card on results */
+.reflect-note { border-right: 4px solid var(--navy); }
+.reflect-note-title { font-size: 15px; font-weight: 700; color: var(--navy); margin-bottom: 6px; }
+.reflect-note-body { font-size: 14px; color: var(--ink-2); line-height: 1.7; }
 </style>
 </head>
 <body>
@@ -621,7 +655,7 @@ h2.cat-title {
     <div class="card intro-card">
       <h2 class="how-it-works" id="intro-heading">איך זה עובד?</h2>
       <p>בכל שורה מוצגים שני ניסוחים מנוגדים: <span class="pill">ניסוח א׳</span> מימין, <span class="pill">ניסוח ב׳</span> משמאל, ובאמצע סקאלה של חמש נקודות.</p>
-      <p>סמנו את הנקודה שמתארת אתכם: קרוב לניסוח א׳, באמצע, או קרוב לניסוח ב׳.</p>
+      <p>סמנו את הנקודה שמתארת אתכם: ניסוח א׳ מדויק לגביכם, נטייה לאחד הצדדים, או ששני הניסוחים נכונים לגביכם במידה דומה. הנקודה האמצעית אינה "לא יודע/ת" — היא אמירה שבאמת שני הצדדים חיים בכם.</p>
       <p>השאלון מנוסח <strong>נייטרלי בכוונה</strong>: אין כאן צד "טוב" או "רע", ואין מספרים על הסקאלה. ענו בכנות לאן אתם נוטים. המשמעות של כל צד תתגלה רק בסוף, במסך התוצאות.</p>
     </div>
     <div class="center" style="margin-top:10px;">
@@ -649,10 +683,23 @@ h2.cat-title {
     <div id="items"></div>
 
     <div class="center" style="margin-top:28px;">
-      <button class="btn" id="showBtn" onclick="showResults()" disabled aria-disabled="true">
+      <button class="btn" id="showBtn" onclick="submitQuiz()" disabled aria-disabled="true">
         הצג את התוצאות שלי
       </button>
       <div class="note" id="remain"></div>
+    </div>
+  </section>
+
+  <!-- REFLECT (shown only when many midpoint answers) -->
+  <section id="reflect" class="hidden" aria-labelledby="reflect-heading">
+    <div class="card">
+      <h2 class="how-it-works" id="reflect-heading">רגע לפני התוצאות</h2>
+      <p id="reflectIntro" style="color:var(--ink-2);line-height:1.7;"></p>
+      <p style="color:var(--ink-2);line-height:1.7;margin-top:10px;">כשבחרת ש"שני הניסוחים נכונים לגביך במידה דומה" — מה היה הכי קרוב לאמת עבורך? <span style="color:var(--muted);">(אין תשובה נכונה — זה רק לעצמך ולשיחה עם המאמן/ת)</span></p>
+      <div id="reflectOpts" class="reflect-opts" role="radiogroup" aria-label="מה עמד מאחורי בחירת האמצע"></div>
+      <div class="center" style="margin-top:22px;">
+        <button class="btn" id="reflectBtn" onclick="finishReflect()" disabled aria-disabled="true">לתוצאות שלי ←</button>
+      </div>
     </div>
   </section>
 
@@ -663,7 +710,13 @@ h2.cat-title {
         <div class="score-num" id="totalNum" aria-live="polite">–</div>
         <div class="score-label" id="totalLabel"></div>
         <div class="score-sub">ציון כולל · 1 = מיינדסט עני &nbsp;·&nbsp; 5 = מיינדסט עשיר</div>
+        <div class="clarity" id="clarityLine" aria-live="polite"></div>
       </div>
+    </div>
+
+    <div class="card reflect-note hidden" id="reflectNote">
+      <p class="reflect-note-title">על אשכול בחירות האמצע שלך</p>
+      <p class="reflect-note-body" id="reflectNoteBody"></p>
     </div>
 
     <div class="card">
@@ -782,10 +835,28 @@ let radarChart  = null;
 let lastCatAvgs = [];
 let sortMode    = 'default';
 
+/* Midpoint / response-style handling */
+const MIDDLE_VAL       = 3;     // the "both equally true" point on the 1–5 scale
+const MIDDLE_THRESHOLD = 0.35;  // share of midpoint answers that triggers the reflection step
+let   reflectAnswer    = null;  // 'genuine' | 'unclear' | 'irrelevant'
+
+const REFLECT_OPTS = [
+  { key: 'genuine',    label: 'שני הצדדים באמת חיים בי — זו עמדה של איזון אמיתי' },
+  { key: 'unclear',    label: 'התקשיתי להחליט, או לא באמת עצרתי להסתכל פנימה' },
+  { key: 'irrelevant', label: 'הנושאים האלה פחות מעסיקים אותי כרגע' },
+];
+
+const REFLECT_NOTES = {
+  genuine:    'בחרת שזהו איזון אמיתי — שיווי-נפש כזה יכול להיות עמדה בריאה ובוגרת. שווה לוודא עם המאמן/ת שזו אכן בחירה מודעת, ולא דרך עדינה להימנע מהכרעה.',
+  unclear:    'סימנת שבחלק מהשאלות התקשית להחליט או לא עצרת להסתכל. חוסר בהירות הוא בעצמו נקודת צמיחה חשובה — דווקא מהשאלות שבהן ישבת על הגדר כדאי להתחיל את השיחה עם המאמן/ת.',
+  irrelevant: 'סימנת שחלק מהנושאים פחות מעסיקים אותך כרגע. כדאי לבדוק עם המאמן/ת אם זו באמת אי-רלוונטיות, או הזדמנות שטרם פגשת.',
+};
+
 function start() {
   try {
     const saved = localStorage.getItem('rms_answers');
     if (saved) answers = JSON.parse(saved);
+    reflectAnswer = localStorage.getItem('rms_reflect') || null;
   } catch(e) {}
   document.getElementById('intro').classList.add('hidden');
   document.getElementById('quiz').classList.remove('hidden');
@@ -840,11 +911,11 @@ function buildQuiz() {
       dotsEl.setAttribute('aria-label', `דירוג בין ניסוח א׳ לניסוח ב׳ — שאלה ${ii + 1} מתוך ${cat.items.length} בקטגוריה`);
 
       const LABELS = [
-        'קרוב מאוד לניסוח א׳',
-        'קרוב לניסוח א׳',
-        'באמצע',
-        'קרוב לניסוח ב׳',
-        'קרוב מאוד לניסוח ב׳',
+        'ניסוח א׳ מדויק לגביי',
+        'אני יותר נוטה לניסוח א׳',
+        'שני הניסוחים נכונים לגביי במידה דומה',
+        'אני יותר נוטה לניסוח ב׳',
+        'ניסוח ב׳ מדויק לגביי',
       ];
 
       for (let v = 1; v <= 5; v++) {
@@ -956,7 +1027,65 @@ function updateProgress() {
   }
 }
 
-function showResults() {
+/* Count midpoint ("both equally true") answers across all items */
+function middleCount() {
+  return Object.values(answers).filter(v => v === MIDDLE_VAL).length;
+}
+
+/* Entry point from the quiz: route through reflection if the midpoint cluster is large */
+function submitQuiz() {
+  const mid = middleCount();
+  if (mid / totalItems >= MIDDLE_THRESHOLD) {
+    showReflect(mid);
+  } else {
+    renderResults();
+  }
+}
+
+function showReflect(mid) {
+  document.getElementById('reflectIntro').textContent =
+    `שמנו לב שב-${mid} מתוך ${totalItems} השאלות סימנת ש"שני הניסוחים נכונים לגביך במידה דומה". זה כשלעצמו ממצא מעניין — ולפני שנציג את התוצאות, שווה לעצור עליו לרגע.`;
+
+  const box = document.getElementById('reflectOpts');
+  box.innerHTML = '';
+  REFLECT_OPTS.forEach(opt => {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'reflect-opt';
+    b.setAttribute('role', 'radio');
+    b.setAttribute('aria-checked', reflectAnswer === opt.key ? 'true' : 'false');
+    b.dataset.key = opt.key;
+    b.innerHTML = `<span class="ro-dot" aria-hidden="true"></span><span>${opt.label}</span>`;
+    b.addEventListener('click', () => pickReflect(opt.key));
+    box.appendChild(b);
+  });
+
+  const btn = document.getElementById('reflectBtn');
+  btn.disabled = reflectAnswer === null;
+  btn.setAttribute('aria-disabled', reflectAnswer === null ? 'true' : 'false');
+
+  document.getElementById('quiz').classList.add('hidden');
+  document.getElementById('reflect').classList.remove('hidden');
+  window.scrollTo(0, 0);
+}
+
+function pickReflect(key) {
+  reflectAnswer = key;
+  try { localStorage.setItem('rms_reflect', key); } catch(e) {}
+  document.querySelectorAll('#reflectOpts .reflect-opt').forEach(b => {
+    b.setAttribute('aria-checked', b.dataset.key === key ? 'true' : 'false');
+  });
+  const btn = document.getElementById('reflectBtn');
+  btn.disabled = false;
+  btn.setAttribute('aria-disabled', 'false');
+}
+
+function finishReflect() {
+  document.getElementById('reflect').classList.add('hidden');
+  renderResults();
+}
+
+function renderResults() {
   const catAvgs = [];
   let all = [];
 
@@ -977,6 +1106,29 @@ function showResults() {
   tn.style.color  = band.color;
   document.getElementById('totalLabel').textContent = band.label;
   document.getElementById('totalLabel').style.color = band.color;
+
+  /* Clarity / decisiveness indicator: how much of a clear lean the answers express,
+     separate from the poor↔rich content score. Two people can share the same average
+     (e.g. all-3 vs. a mix of 1s and 5s) yet differ entirely here. */
+  const mid       = middleCount();
+  const midPct    = Math.round(mid / all.length * 100);
+  const clarityEl = document.getElementById('clarityLine');
+  let clarityTxt;
+  if (midPct >= 50)      clarityTxt = 'נמוכה — סימנת אמצע בחלק גדול מהשאלות';
+  else if (midPct >= 35) clarityTxt = 'בינונית — יש לא מעט שאלות שבהן ישבת על הגדר';
+  else                   clarityTxt = 'גבוהה — ברוב השאלות הבעת עמדה ברורה';
+  clarityEl.innerHTML =
+    `מדד בהירות העמדה: <span class="clarity-val">${clarityTxt}</span><br>` +
+    `<span style="color:var(--muted);">(${midPct}% מהתשובות היו "שני הניסוחים נכונים לגביי במידה דומה")</span>`;
+
+  /* Reflection note: surface what the midpoint cluster meant, if the user told us */
+  const noteCard = document.getElementById('reflectNote');
+  if (reflectAnswer && REFLECT_NOTES[reflectAnswer]) {
+    document.getElementById('reflectNoteBody').textContent = REFLECT_NOTES[reflectAnswer];
+    noteCard.classList.remove('hidden');
+  } else {
+    noteCard.classList.add('hidden');
+  }
 
   lastCatAvgs = catAvgs;
   renderBreakdown();
@@ -1075,8 +1227,13 @@ function drawRadar(vals) {
 
 function restart() {
   answers = {};
-  try { localStorage.removeItem('rms_answers'); } catch(e) {}
+  reflectAnswer = null;
+  try {
+    localStorage.removeItem('rms_answers');
+    localStorage.removeItem('rms_reflect');
+  } catch(e) {}
   document.getElementById('results').classList.add('hidden');
+  document.getElementById('reflect').classList.add('hidden');
   document.getElementById('intro').classList.remove('hidden');
   window.scrollTo(0, 0);
 }
