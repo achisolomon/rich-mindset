@@ -525,10 +525,7 @@ h2.cat-title {
 .res-row.open .res-chevron { transform: rotate(-135deg) translate(-1px, -1px); }
 
 .cat-detail {
-  margin-top: 12px;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
+  margin-top: 8px;
   animation: catFade 0.2s ease-out;
 }
 
@@ -537,54 +534,10 @@ h2.cat-title {
   to   { opacity: 1; transform: translateY(0); }
 }
 
-.cat-q {
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  padding: 12px;
-  background: var(--bg);
-}
-
-.cat-stmt {
-  display: flex;
-  gap: 8px;
-  font-size: 13px;
-  line-height: 1.5;
-  color: var(--muted);
-  padding: 7px 10px;
-  border-radius: 8px;
-  border: 1.5px solid transparent;
-  margin-bottom: 6px;
-}
-
-.cat-stmt-label {
-  font-weight: 800;
-  font-size: 11px;
-  flex-shrink: 0;
-  opacity: 0.7;
-}
-
-.cat-stmt.a.picked {
-  background: #e3eaf4;
-  border-color: #1f3864;
-  color: #1f3864;
-}
-
-.cat-stmt.b.picked {
-  background: #e4efe9;
-  border-color: #1a5e36;
-  color: #1a5e36;
-}
-
-.cat-stmt.a.picked .cat-stmt-label { color: #1f3864; opacity: 1; }
-.cat-stmt.b.picked .cat-stmt-label { color: #1a5e36; opacity: 1; }
-
-.cat-pick {
-  margin-top: 8px;
-  font-size: 12px;
-  font-weight: 700;
-  color: var(--ink);
-  text-align: center;
-}
+/* Read-only quiz rows inside the expanded category — reuse the form layout
+   (.item / .scale-row / .dots) but disable interaction. */
+.cat-item .dots { pointer-events: none; }
+.cat-item .dot  { cursor: default; }
 
 /* === LEGEND === */
 .legend-rev {
@@ -1219,35 +1172,60 @@ function renderBreakdown() {
   });
 }
 
-/* Builds the per-question detail for one category (statements + chosen answer),
-   highlighting the side the user leaned toward. */
+/* Builds the per-question detail for one category as read-only quiz rows,
+   mirroring the form layout (statements + dot scale with the chosen dot marked). */
 function buildCatDetail(cat, ci) {
   const frag = document.createDocumentFragment();
 
   cat.items.forEach((pair, ii) => {
-    const v     = answers[`${ci}_${ii}`];
-    const aSel  = v >= 1 && v <= 2;   /* leaned to ניסוח א׳ */
-    const bSel  = v >= 3 && v <= 4;   /* leaned to ניסוח ב׳ */
+    const v = answers[`${ci}_${ii}`];
 
-    const q = document.createElement('div');
-    q.className = 'cat-q';
+    const item = document.createElement('div');
+    item.className = 'item cat-item' + (v ? ' answered' : '');
 
-    const sa = document.createElement('div');
-    sa.className = 'cat-stmt a' + (aSel ? ' picked' : '');
-    sa.innerHTML = `<span class="cat-stmt-label" aria-hidden="true">א׳</span><span>${pair[0]}</span>`;
+    const row = document.createElement('div');
+    row.className = 'scale-row';
 
-    const sb = document.createElement('div');
-    sb.className = 'cat-stmt b' + (bSel ? ' picked' : '');
-    sb.innerHTML = `<span class="cat-stmt-label" aria-hidden="true">ב׳</span><span>${pair[1]}</span>`;
+    /* Statement A (right) */
+    const a = document.createElement('div');
+    a.className = 'stmt right';
+    a.innerHTML = `<span class="stmt-label" aria-hidden="true">א׳</span>${pair[0]}`;
 
-    const pick = document.createElement('div');
-    pick.className = 'cat-pick';
-    pick.textContent = v ? `תשובה: ${ANSWER_LABELS[v - 1]} (${v})` : 'תשובה: לא נענה';
+    /* Statement B (left) */
+    const b = document.createElement('div');
+    b.className = 'stmt left';
+    b.innerHTML = `<span class="stmt-label" aria-hidden="true">ב׳</span>${pair[1]}`;
 
-    q.appendChild(sa);
-    q.appendChild(sb);
-    q.appendChild(pick);
-    frag.appendChild(q);
+    /* Read-only dot scale with the chosen value marked */
+    const scaleWrap = document.createElement('div');
+    scaleWrap.className = 'scale-wrap';
+
+    const dotsEl = document.createElement('div');
+    dotsEl.className = 'dots';
+    dotsEl.setAttribute('role', 'radiogroup');
+    dotsEl.setAttribute('aria-label', 'התשובה שבחרת בשאלה זו');
+
+    for (let val = 1; val <= 4; val++) {
+      const d = document.createElement('span');
+      d.className = 'dot';
+      d.setAttribute('role', 'radio');
+      d.setAttribute('aria-checked', val === v ? 'true' : 'false');
+      d.setAttribute('aria-label', ANSWER_LABELS[val - 1]);
+      dotsEl.appendChild(d);
+    }
+
+    const hint = document.createElement('div');
+    hint.className = 'scale-hint';
+    hint.setAttribute('aria-hidden', 'true');
+    hint.innerHTML = '<span>↑ ניסוח א׳</span><span>ניסוח ב׳ ↑</span>';
+
+    scaleWrap.appendChild(dotsEl);
+    scaleWrap.appendChild(hint);
+    row.appendChild(a);
+    row.appendChild(scaleWrap);
+    row.appendChild(b);
+    item.appendChild(row);
+    frag.appendChild(item);
   });
 
   return frag;
