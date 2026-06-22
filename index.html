@@ -210,10 +210,12 @@ main {
 
 .progress-fill {
   height: 100%;
-  width: 0;
+  width: 100%;
   background: linear-gradient(90deg, var(--navy) 0%, var(--blue-light) 100%);
   border-radius: 8px;
-  transition: width 0.3s ease-out;
+  transform: scaleX(0);
+  transform-origin: right; /* RTL: fill grows from right */
+  transition: transform 0.3s ease-out;
 }
 
 .progress-txt {
@@ -379,8 +381,7 @@ h2.cat-title {
   justify-content: space-between;
   font-size: 11px;
   font-weight: 600;
-  opacity: 0;
-  transition: opacity 0.2s;
+  opacity: 1;
   pointer-events: none;
 }
 
@@ -593,6 +594,17 @@ h2.cat-title {
 @media (pointer: coarse) {
   .dot { min-width: 44px; min-height: 44px; }
 }
+
+/* === PRINT === */
+@media print {
+  .progress-wrap, #intro, #quiz, .btn, .sort-bar,
+  .results-tip, .coaching-cta { display: none !important; }
+  #results { display: block !important; }
+  body { background: #fff; color: #000; }
+  .card { box-shadow: none; border: 1px solid #ccc; break-inside: avoid; }
+  .score-num { font-size: 60px; }
+  .chart-box { max-width: 400px; }
+}
 </style>
 </head>
 <body>
@@ -607,10 +619,10 @@ h2.cat-title {
   <!-- INTRO -->
   <section id="intro" aria-labelledby="intro-heading">
     <div class="card intro-card">
-      <p class="how-it-works" id="intro-heading">איך זה עובד?</p>
-      <p>בכל שורה מוצגים שני ניסוחים מנוגדים — <span class="pill">ניסוח א׳</span> מימין ו<span class="pill">ניסוח ב׳</span> משמאל — ובאמצע סקאלה של חמש נקודות.</p>
+      <h2 class="how-it-works" id="intro-heading">איך זה עובד?</h2>
+      <p>בכל שורה מוצגים שני ניסוחים מנוגדים: <span class="pill">ניסוח א׳</span> מימין, <span class="pill">ניסוח ב׳</span> משמאל, ובאמצע סקאלה של חמש נקודות.</p>
       <p>סמנו את הנקודה שמתארת אתכם: קרוב לניסוח א׳, באמצע, או קרוב לניסוח ב׳.</p>
-      <p>השאלון מנוסח <strong>נייטרלי בכוונה</strong> — אין כאן צד "טוב" או "רע", ואין מספרים על הסקאלה. ענו בכנות לאן אתם נוטים. המשמעות של כל צד תתגלה רק בסוף, במסך התוצאות.</p>
+      <p>השאלון מנוסח <strong>נייטרלי בכוונה</strong>: אין כאן צד "טוב" או "רע", ואין מספרים על הסקאלה. ענו בכנות לאן אתם נוטים. המשמעות של כל צד תתגלה רק בסוף, במסך התוצאות.</p>
     </div>
     <div class="center" style="margin-top:10px;">
       <button class="btn" onclick="start()">בואו נתחיל ←</button>
@@ -671,15 +683,20 @@ h2.cat-title {
     <div class="card">
       <p class="chart-section-title">פרופיל המיינדסט שלך</p>
       <div class="chart-box">
-        <canvas id="radar" aria-label="גרף מכ״מ של פרופיל המיינדסט לפי קטגוריות"></canvas>
+        <canvas id="radar" role="img" aria-label="גרף מכ״מ של פרופיל המיינדסט לפי קטגוריות"></canvas>
       </div>
     </div>
 
+    <div class="card coaching-cta" style="text-align:center;">
+      <p style="font-size:15px;font-weight:700;color:var(--navy);margin-bottom:8px;">לפגישה הבאה עם המאמן</p>
+      <p style="font-size:14px;color:var(--ink-2);line-height:1.7;margin-bottom:16px;">שמרו או הדפיסו את הדף והביאו אותו לפגישה. התמקדו במיוחד בקטגוריות עם הציון הנמוך ביותר, שם הפוטנציאל הגדול ביותר לצמיחה.</p>
+      <button class="btn" onclick="window.print()" style="margin-left:10px;">הדפסה / שמירה כ-PDF</button>
+    </div>
     <div class="center" style="margin-top:8px;">
       <button class="btn ghost" onclick="restart()">מילוי מחדש</button>
     </div>
     <p class="results-tip">
-      טיפ: התמקדו בקטגוריות עם הציון הנמוך ביותר — שם הפוטנציאל הגדול ביותר לצמיחה.
+      טיפ: התמקדו בקטגוריות עם הציון הנמוך ביותר. שם הפוטנציאל הגדול ביותר לצמיחה.
     </p>
   </section>
 
@@ -700,19 +717,19 @@ const CATS = [
    ["לפרישה אני מתכנן/ת להסתמך בעיקר על קצבת הפנסיה.","לפרישה אני בונה נכסים שימשיכו לייצר הכנסה."],
  ]},
  {name:"צמיחה ולמידה", items:[
-   ["אני מרגיש/ה שבתחומים שלי כבר צברתי ידע וניסיון טובים.","אני מרגיש/ה שתמיד יש לי עוד מה ללמוד – \"His cup is never full\"."],
+   ["אני מרגיש/ה שבתחומים שלי כבר צברתי ידע וניסיון טובים.","אני מרגיש/ה שתמיד יש לי עוד מה ללמוד, \"His cup is never full\"."],
    ["כשמשהו לא עובד, אני נוטה להמשיך לפעול באותה דרך מוכרת.","כשמשהו לא עובד, אני בוחן/ת מה ללמוד ומשנה גישה."],
    ["כשמשהו לא מצליח, כנראה שזה פשוט לא בשבילי.","כשאני נתקל/ת בקושי, אני מתמיד/ה וממשיך/ה לנסות בדרך אחרת."],
  ]},
  {name:"תודעת שפע מול מחסור", items:[
    ["אני נוטה לשמור ולהיזהר עם כסף, כי המשאבים מוגבלים.","אני נוטה לראות שפע והזדמנויות, ושיש מספיק לכולם."],
-   ["כשמשהו יקר, אני דוחה סיפוקים – אקנה כשיהיה לי מספיק כסף.","כשמשהו יקר, אני שואל/ת \"איך אוכל להרשות לעצמי את זה?\"."],
+   ["כשמשהו יקר, אני דוחה סיפוקים: אקנה כשיהיה לי מספיק כסף.","כשמשהו יקר, אני שואל/ת \"איך אוכל להרשות לעצמי את זה?\"."],
    ["אני נוהג/ת בזהירות ובבדיקה כשמגיעה הזדמנות חדשה.","כשמגיעה הזדמנות, אני נוטה לפעול ולנצל אותה."],
-   ["אני מאמין/ה שלעיתים צריך לבחור – אי אפשר לקבל את הכול.","אני מאמין/ה שעם יצירתיות אפשר \"גם וגם\" – לשלב בין מה שחשוב לי."],
+   ["אני מאמין/ה שלעיתים צריך לבחור, אי אפשר לקבל את הכול.","אני מאמין/ה שעם יצירתיות אפשר \"גם וגם\", לשלב בין מה שחשוב לי."],
    ["אני נוטה לראות עסקה כמצב שבו צד אחד מרוויח על חשבון השני.","אני מחפש/ת עסקאות win-win שבהן כל הצדדים מרוויחים."],
    ["אני מודד/ת עושר לפי דברים מוחשיים: משכורת, בית, רכב.","אני מודד/ת עושר לפי תחושה פנימית ולפי תזרים המזומנים שלי."],
  ]},
- {name:"תפקיד הכסף – שמירה מול יצירה", items:[
+ {name:"תפקיד הכסף: שמירה מול יצירה", items:[
    ["כסף נועד בעיקר להישמר ולהיחסך ליום סגריר.","אני מאמין/ה שכסף נועד לזרום, להיות מושקע ולבנות."],
    ["אני מתמקד/ת בעיקר בשמירה על מה שכבר יש לי.","אני מתמקד/ת ביצירת הון ותזרים חדשים."],
  ]},
@@ -733,7 +750,7 @@ const CATS = [
  ]},
  {name:"זהירות מול יציאה לדרך", items:[
    ["אני מעדיף/ה לחכות שהתנאים יהיו בשלים ובטוחים לפני שאני יוצא/ת לדרך.","אני מתמקד/ת ביעד ויוצא/ת לדרך גם כשלא הכול מושלם."],
-   ["אני אוהב/ת לנתח לעומק את כל הפרטים לפני שאני מחליט/ה.","הניתוח עוזר לי להבין סיכונים, להחליט – ואז לפעול."],
+   ["אני אוהב/ת לנתח לעומק את כל הפרטים לפני שאני מחליט/ה.","הניתוח עוזר לי להבין סיכונים, להחליט, ואז לפעול."],
  ]},
  {name:"חשיבה בגדול (כמויות)", items:[
    ["אני מעדיף/ה לעבוד באופן אישי וממוקד, \"אחד על אחד\".","אני חושב/ת בגדול ומחפש/ת להגדיל את הכמות וההשפעה."],
@@ -766,6 +783,10 @@ let lastCatAvgs = [];
 let sortMode    = 'default';
 
 function start() {
+  try {
+    const saved = localStorage.getItem('rms_answers');
+    if (saved) answers = JSON.parse(saved);
+  } catch(e) {}
   document.getElementById('intro').classList.add('hidden');
   document.getElementById('quiz').classList.remove('hidden');
   buildQuiz();
@@ -855,6 +876,16 @@ function buildQuiz() {
       row.appendChild(b);
       item.appendChild(row);
       section.appendChild(item);
+
+      /* Restore saved answer visually */
+      if (answers[key] !== undefined) {
+        item.classList.add('answered');
+        item.querySelectorAll('.dot').forEach(d => {
+          const sel = +d.dataset.v === answers[key];
+          d.setAttribute('aria-checked', sel ? 'true' : 'false');
+          d.tabIndex = sel ? 0 : -1;
+        });
+      }
     });
 
     box.appendChild(section);
@@ -889,6 +920,7 @@ function handleDotKey(e, key, v) {
 
 function pick(key, v) {
   answers[key] = v;
+  try { localStorage.setItem('rms_answers', JSON.stringify(answers)); } catch(e) {}
   const item = document.getElementById(`item_${key}`);
   item.classList.add('answered');
 
@@ -905,7 +937,7 @@ function updateProgress() {
   const done = Object.keys(answers).length;
   const pct  = Math.round(done / totalItems * 100);
 
-  document.getElementById('pfill').style.width = pct + '%';
+  document.getElementById('pfill').style.transform = `scaleX(${pct / 100})`;
   document.getElementById('progressBar').setAttribute('aria-valuenow', pct);
   document.getElementById('ptxt').textContent = `${done} מתוך ${totalItems} (${pct}%)`;
 
@@ -988,6 +1020,10 @@ function renderBreakdown() {
 
 function drawRadar(vals) {
   const ctx = document.getElementById('radar');
+  if (typeof Chart === 'undefined') {
+    ctx.parentElement.innerHTML = '<p style="color:var(--muted);font-size:14px;text-align:center;padding:20px">גרף המכ״מ אינו זמין. בדוק את חיבור האינטרנט ורענן.</p>';
+    return;
+  }
   if (radarChart) radarChart.destroy();
 
   radarChart = new Chart(ctx, {
@@ -1039,6 +1075,7 @@ function drawRadar(vals) {
 
 function restart() {
   answers = {};
+  try { localStorage.removeItem('rms_answers'); } catch(e) {}
   document.getElementById('results').classList.add('hidden');
   document.getElementById('intro').classList.remove('hidden');
   window.scrollTo(0, 0);
