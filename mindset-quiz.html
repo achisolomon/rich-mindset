@@ -77,15 +77,21 @@
     .dots{gap:14px}
     .dot{width:34px;height:34px}
     .dot:nth-child(1),.dot:nth-child(5){width:40px;height:40px}
+    /* results breakdown */
+    .legend-rev{grid-template-columns:1fr; gap:5px}
+    .legend-rev .r{text-align:right}
+    .res-head{flex-direction:column; align-items:flex-start; gap:2px}
+    .res-name{flex:1 1 auto}
+    .res-val{font-size:13px}
   }
   /* results */
   .score-hero{text-align:center; padding:6px 0 4px}
   .score-num{font-size:54px; font-weight:800; line-height:1}
   .score-label{font-size:18px; font-weight:700; margin-top:6px}
-  .res-row{margin:12px 0}
-  .res-head{display:flex; justify-content:space-between; align-items:baseline; font-size:14px; margin-bottom:5px}
-  .res-name{font-weight:600; color:#2a3543}
-  .res-val{font-weight:700}
+  .res-row{margin:14px 0}
+  .res-head{display:flex; flex-wrap:wrap; justify-content:space-between; align-items:baseline; gap:2px 12px; font-size:14px; margin-bottom:6px}
+  .res-name{font-weight:600; color:#2a3543; flex:1 1 auto; min-width:0}
+  .res-val{font-weight:700; white-space:nowrap; flex:0 0 auto}
   .track{position:relative; height:16px; border-radius:9px; background:linear-gradient(90deg,#1f6f43 0%,#3d7ab8 35%,#e8e8e8 50%,#e08a3c 65%,#c0392b 100%); opacity:.85}
   .marker{position:absolute; top:-4px; width:4px; height:24px; background:#1f2733; border-radius:3px; transform:translateX(2px)}
   .legend-rev{display:grid; grid-template-columns:1fr 1fr; gap:6px; font-size:13px; margin-top:4px}
