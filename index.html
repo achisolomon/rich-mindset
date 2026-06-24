@@ -627,9 +627,9 @@ h2.cat-title {
   <section id="intro" aria-labelledby="intro-heading">
     <div class="card intro-card">
       <h2 class="how-it-works" id="intro-heading">איך זה עובד?</h2>
-      <p>בכל שורה מוצגים שני ניסוחים מנוגדים: <span class="pill">ניסוח א׳</span> מימין, <span class="pill">ניסוח ב׳</span> משמאל, ובאמצע סקאלה של ארבע נקודות.</p>
-      <p>אין נקודת אמצע — בחרו את הצד שמתאר אתכם, קרוב או קרוב מאוד לכל ניסוח.</p>
-      <p>השאלון מנוסח <strong>נייטרלי בכוונה</strong>: אין כאן צד "טוב" או "רע", ואין מספרים על הסקאלה. ענו בכנות לאן אתם נוטים. המשמעות של כל צד תתגלה רק בסוף, במסך התוצאות.</p>
+      <p>בכל שורה מוצגים שני ניסוחים מנוגדים: <span class="pill">ניסוח א׳</span> מימין, <span class="pill">ניסוח ב׳</span> משמאל.</p>
+      <p>אין נקודת אמצע — בחרו את הניסוח האחד שמתאר אתכם יותר. חייבים לבחור צד.</p>
+      <p>השאלון מנוסח <strong>נייטרלי בכוונה</strong>: אין כאן צד "טוב" או "רע". ענו בכנות לאן אתם נוטים. המשמעות של כל צד תתגלה רק בסוף, במסך התוצאות.</p>
     </div>
     <div class="center" style="margin-top:10px;">
       <button class="btn" onclick="start()">בואו נתחיל ←</button>
@@ -669,7 +669,7 @@ h2.cat-title {
       <div class="score-hero">
         <div class="score-num" id="totalNum" aria-live="polite">–</div>
         <div class="score-label" id="totalLabel"></div>
-        <div class="score-sub">ציון כולל · 1 = מיינדסט עני &nbsp;·&nbsp; 4 = מיינדסט עשיר</div>
+        <div class="score-sub">ציון כולל · 1 = מיינדסט עני &nbsp;·&nbsp; 2 = מיינדסט עשיר</div>
       </div>
     </div>
 
@@ -1014,7 +1014,7 @@ function renderBreakdown() {
     const track = document.createElement('div');
     track.className = 'track';
     track.setAttribute('aria-hidden', 'true');
-    track.innerHTML = `<div class="marker" style="right:calc(${((v - 1) / 3 * 100)}% - 2px)"></div>`;
+    track.innerHTML = `<div class="marker" style="right:calc(${((v - 1) * 100)}% - 2px)"></div>`;
 
     const detail = document.createElement('div');
     detail.className = 'cat-detail hidden';
@@ -1035,7 +1035,7 @@ function renderBreakdown() {
 }
 
 /* Builds the per-question detail for one category as read-only quiz rows,
-   mirroring the form layout (statements + dot scale with the chosen dot marked). */
+   mirroring the form layout (the two statements with the chosen one highlighted). */
 function buildCatDetail(cat, ci) {
   const frag = document.createDocumentFragment();
 
@@ -1101,9 +1101,9 @@ function drawRadar(vals) {
       responsive: true,
       scales: {
         r: {
-          min: 0,
-          max: 4,
-          ticks: { stepSize: 1, backdropColor: 'transparent', font: { size: 11 } },
+          min: 1,
+          max: 2,
+          ticks: { stepSize: 0.25, backdropColor: 'transparent', font: { size: 11 } },
           pointLabels: { font: { size: 10, weight: '600' } },
           grid:        { color: 'rgba(31,56,100,0.08)' },
           angleLines:  { color: 'rgba(31,56,100,0.08)' },
