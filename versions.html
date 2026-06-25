@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>שאלון מיפוי מיינדסט — בחירת גרסה</title>
+<link rel="stylesheet" href="quiz.css">
+<style>
+  .versions-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 8px; }
+  @media (max-width: 640px) { .versions-grid { grid-template-columns: 1fr; } }
+  .version-card {
+    display: block; text-decoration: none; color: inherit;
+    background: var(--card); border: 1.5px solid var(--line); border-radius: 18px;
+    padding: 26px; box-shadow: 0 1px 3px rgba(20,35,60,0.06), 0 4px 16px rgba(20,35,60,0.05);
+    transition: border-color 0.15s, transform 0.12s, box-shadow 0.15s;
+  }
+  .version-card:hover { border-color: var(--blue-light); transform: translateY(-2px); box-shadow: 0 6px 22px rgba(20,35,60,0.1); }
+  .version-card:focus-visible { outline: 3px solid var(--blue-light); outline-offset: 3px; }
+  .version-card h2 { font-size: 18px; color: var(--navy); font-weight: 800; margin-bottom: 8px; }
+  .version-card p { font-size: 14px; color: var(--ink-2); line-height: 1.7; }
+  .version-card .go { display: inline-block; margin-top: 14px; font-weight: 700; color: var(--blue); }
+</style>
+</head>
+<body>
+<main>
+  <header class="site-header">
+    <span class="eyebrow">כלי אבחון</span>
+    <h1>שאלון מיפוי מיינדסט</h1>
+    <p class="sub">בחרו גרסה למילוי</p>
+  </header>
+  <div class="versions-grid">
+    <a class="version-card" href="index.html">
+      <h2>גרסה א׳ — בחירה בין שני ניסוחים</h2>
+      <p>בכל שאלה בוחרים את אחד משני הניסוחים המנוגדים. מהיר וחד.</p>
+      <span class="go">למילוי גרסה א׳ ←</span>
+    </a>
+    <a class="version-card" href="scale4.html">
+      <h2>גרסה ב׳ — סולם בן 4 דרגות</h2>
+      <p>בכל שאלה מדרגים על סולם בן ארבע דרגות בין שני הניסוחים. מדויק יותר.</p>
+      <span class="go">למילוי גרסה ב׳ ←</span>
+    </a>
+  </div>
+</main>
+</body>
+</html>
