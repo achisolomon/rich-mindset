@@ -72,9 +72,9 @@
         const aAnchor = el('div', 'scale4-anchor right');
         aAnchor.innerHTML = `<span class="stmt-label" aria-hidden="true">א׳</span>${pair[0]}`;
 
+        // Native radios share name=`q_${key}` and sit inside the fieldset/legend,
+        // which already groups and labels them — no extra ARIA radiogroup needed.
         const radios = el('div', 'scale4-radios');
-        radios.setAttribute('role', 'radiogroup');
-        radios.setAttribute('aria-label', `דרגו בין ${pair[0]} (א׳) לבין ${pair[1]} (ב׳)`);
         SCALE4_LABELS.forEach((lab, idx) => {
           const opt = el('label', 'scale4-opt');
           const input = document.createElement('input');
@@ -258,7 +258,7 @@
       CATS.forEach((cat, ci) => {
         const vals = cat.items.map((_, ii) => answers[`${ci}_${ii}`]).filter(v => v !== undefined);
         all = all.concat(vals);
-        catAvgs.push(+(vals.reduce((a, b) => a + b, 0) / vals.length).toFixed(2));
+        catAvgs.push(vals.length ? +(vals.reduce((a, b) => a + b, 0) / vals.length).toFixed(2) : 1.5);
       });
       const total = +(all.reduce((a, b) => a + b, 0) / all.length).toFixed(2);
       document.getElementById('quiz').classList.add('hidden');
@@ -300,7 +300,7 @@
     function setSortMode(m) {
       sortMode = m;
       ['default', 'rich', 'poor'].forEach(x => {
-        const btn = document.getElementById('sort' + x[0].toUpperCase() + x.slice(1));
+        const btn = document.querySelector(`.sort-btn[data-sort="${x}"]`);
         btn.classList.toggle('active', x === m);
         btn.setAttribute('aria-pressed', x === m ? 'true' : 'false');
       });
