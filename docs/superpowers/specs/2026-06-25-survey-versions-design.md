@@ -79,20 +79,28 @@ keep the existing position marker, which already works for any value in `[1,2]`.
 Match the sibling `ai-tool-review` convention: Playwright + `@axe-core/playwright`.
 `rich-mindset` has no test setup today, so this establishes one.
 
-Add: `package.json` (`"test": "playwright test"`), `playwright.config.js`, a static
-serve script, and `tests/quiz.spec.js` covering both versions:
+Add: `package.json` (`"test": "playwright test"`), `playwright.config.js`, and a
+static serve script. Tests are split into **multiple focused spec files** (not one
+catch-all), so a failure points straight at the area, and version-specific vs shared
+concerns stay separated:
 
-- **Rendering:** intro shows; `start()` reveals 40 questions; binary renders 2
-  buttons/question; scale4 renders exactly **4 radios/question, no neutral middle**.
-- **Answer + scoring:** selecting an option records it; answering all enables
-  results; total score lands in `[1,2]`; radar renders. Confirms `1 + idx/3`
-  (scale4) and `1/2` (binary) yield comparable results.
-- **Isolation:** `rms_answers_binary` and `rms_answers_scale4` don't clobber.
-- **Landing:** `versions.html` has two links resolving to the two pages.
-- **a11y:** axe scan on intro + quiz for each version.
+- **`tests/binary.spec.js`** — `index.html`: intro shows; `start()` reveals 40
+  questions; renders 2 statement buttons/question; selecting records `1`/`2`.
+- **`tests/scale4.spec.js`** — `scale4.html`: renders exactly **4 radios/question,
+  no neutral middle**; selecting maps to `1 + idx/3` → `1.0, 1.33, 1.67, 2.0`.
+- **`tests/results.spec.js`** — shared results across both versions: answering all
+  enables results; total score lands in `[1,2]`; bands and radar render; binary and
+  scale4 produce comparable results from equivalent answers.
+- **`tests/isolation.spec.js`** — `rms_answers_binary` and `rms_answers_scale4`
+  don't clobber each other.
+- **`tests/landing.spec.js`** — `versions.html` has two links resolving to the two
+  version pages.
+- **`tests/a11y.spec.js`** — axe scan on intro + quiz for each version (WCAG 2.1 AA).
 
-Run with `npm test`. This is what makes future versions safe to add — the shared
-intro/results are re-verified automatically.
+A shared `tests/helpers.js` provides common setup (serve URL, accept-state, answer-all
+helper) to keep the spec files small. Run all with `npm test`. This is what makes
+future versions safe to add — the shared intro/results are re-verified automatically,
+and a new version adds its own small spec file alongside the existing ones.
 
 ## Out of scope (YAGNI)
 
@@ -109,4 +117,5 @@ intro/results are re-verified automatically.
 3. `versions.html` links to both versions.
 4. Intro and results are defined once in `quiz-core.js` and shared by all versions.
 5. Adding a new version requires only a new thin HTML shell (+ optional data subset).
-6. `npm test` passes (rendering, scoring, isolation, landing, a11y).
+6. `npm test` passes — multiple focused spec files (binary, scale4, results,
+   isolation, landing, a11y), not a single catch-all.
