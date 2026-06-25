@@ -20,7 +20,7 @@ test('answering a question records 1/2 and marks it answered', async ({ page }) 
   await firstItem.locator('.stmt.right').click();
   await expect(firstItem).toHaveClass(/answered/);
 
-  const stored = await page.evaluate(() => JSON.parse(localStorage.getItem('rms_answers') || '{}'));
+  const stored = await page.evaluate(() => JSON.parse(localStorage.getItem('rms_answers_binary') || '{}'));
   expect(stored['0_0']).toBe(1);
 });
 
