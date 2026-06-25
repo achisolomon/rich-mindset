@@ -1,7 +1,7 @@
 const { expect } = require('@playwright/test');
 
 // Total number of questions across all 12 categories.
-const TOTAL_ITEMS = 40;
+const TOTAL_ITEMS = 36;
 
 // Number of categories.
 const TOTAL_CATS = 12;
