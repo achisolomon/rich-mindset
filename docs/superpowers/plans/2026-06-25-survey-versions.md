@@ -83,7 +83,7 @@ module.exports = defineConfig({
 const { expect } = require('@playwright/test');
 
 // Total number of questions across all 12 categories.
-const TOTAL_ITEMS = 40;
+const TOTAL_ITEMS = 36;
 
 // Number of categories.
 const TOTAL_CATS = 12;
@@ -150,7 +150,7 @@ This locks the CURRENT behavior so the refactor in Task 4 is provably identical.
 const { test, expect } = require('@playwright/test');
 const { TOTAL_ITEMS, answerAll, startQuiz } = require('./helpers');
 
-test('intro shows then start reveals 40 questions as 2-button rows', async ({ page }) => {
+test('intro shows then start reveals all questions as 2-button rows', async ({ page }) => {
   await page.goto('/index.html');
   await expect(page.locator('#intro')).toBeVisible();
   await expect(page.locator('#quiz')).toBeHidden();
@@ -298,7 +298,7 @@ Concretely: set `cats:` to the array that currently follows `const CATS =` and `
 - [ ] **Step 3: Sanity-check the data file parses**
 
 Run: `node -e "global.window={}; require('./quiz-data.js'); const d=window.QUIZ_DATA; let n=0; d.cats.forEach(c=>n+=c.items.length); console.log('cats',d.cats.length,'items',n,'bands',d.bands.length)"`
-Expected: `cats 12 items 40 bands 4`
+Expected: `cats 12 items 36 bands 4`
 
 - [ ] **Step 4: Commit**
 
@@ -751,7 +751,7 @@ Replace the ENTIRE contents of `index.html` with:
 - [ ] **Step 3: Run the baseline regression — expect PASS (unchanged behavior)**
 
 Run: `npm test -- tests/binary.spec.js`
-Expected: 3 passed. The refactor preserves DOM ids, classes, 40 items, two buttons each, `0_0 → 1` on click, and total in `[1,2]`.
+Expected: 3 passed. The refactor preserves DOM ids, classes, 36 items, two buttons each, `0_0 → 1` on click, and total in `[1,2]`.
 
 Note: the localStorage key changed from `rms_answers` to `rms_answers_binary`. The baseline test from Task 2 reads `rms_answers` in one assertion — update that line now to `rms_answers_binary`:
 

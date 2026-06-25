@@ -13,7 +13,7 @@ identically in every version.
 
 ## Background
 
-The current quiz is a single self-contained `index.html`: 40 questions across 12
+The current quiz is a single self-contained `index.html`: 36 questions across 12
 categories. Each question is a **binary choice** between two opposing statements
 (statement A vs B), rendered as two clickable buttons. Question data lives in a
 `CATS` array where each item is a `[statementA, statementB]` pair. Scoring:
@@ -84,7 +84,7 @@ static serve script. Tests are split into **multiple focused spec files** (not o
 catch-all), so a failure points straight at the area, and version-specific vs shared
 concerns stay separated:
 
-- **`tests/binary.spec.js`** — `index.html`: intro shows; `start()` reveals 40
+- **`tests/binary.spec.js`** — `index.html`: intro shows; `start()` reveals all
   questions; renders 2 statement buttons/question; selecting records `1`/`2`.
 - **`tests/scale4.spec.js`** — `scale4.html`: renders exactly **4 radios/question,
   no neutral middle**; selecting maps to `1 + idx/3` → `1.0, 1.33, 1.67, 2.0`.

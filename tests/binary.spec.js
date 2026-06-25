@@ -1,7 +1,7 @@
 const { test, expect } = require('@playwright/test');
 const { TOTAL_ITEMS, answerAll, startQuiz } = require('./helpers');
 
-test('intro shows then start reveals 40 questions as 2-button rows', async ({ page }) => {
+test('intro shows then start reveals all questions as 2-button rows', async ({ page }) => {
   await page.goto('/index.html');
   await expect(page.locator('#intro')).toBeVisible();
   await expect(page.locator('#quiz')).toBeHidden();
