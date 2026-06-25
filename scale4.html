@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>שאלון מיפוי מיינדסט — סולם 4 דרגות</title>
+<link rel="stylesheet" href="quiz.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js" crossorigin="anonymous"></script>
+</head>
+<body>
+<main id="app"></main>
+<script src="quiz-data.js"></script>
+<script src="quiz-core.js"></script>
+<script>
+  initQuiz({
+    id: 'scale4',
+    mode: 'scale4',
+    cats: QUIZ_DATA.cats,
+    bands: QUIZ_DATA.bands,
+    introHtml: `
+      <p>בכל שורה מוצגים שני ניסוחים מנוגדים: <span class="pill">ניסוח א׳</span> מימין, <span class="pill">ניסוח ב׳</span> משמאל.</p>
+      <p>בחרו את אחת מ-<strong>ארבע הדרגות</strong> שביניהם — מ"הכי קרוב לניסוח א׳" ועד "הכי קרוב לניסוח ב׳". אין נקודת אמצע — חייבים לבחור צד.</p>
+      <p>השאלון מנוסח <strong>נייטרלי בכוונה</strong>: אין כאן צד "טוב" או "רע". ענו בכנות לאן אתם נוטים. המשמעות של כל צד תתגלה רק בסוף, במסך התוצאות.</p>`,
+  });
+</script>
+</body>
+</html>

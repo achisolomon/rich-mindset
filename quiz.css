@@ -640,6 +640,7 @@ h2.cat-title {
   padding: 0 6px;
 }
 .scale4-opt {
+  position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -647,13 +648,17 @@ h2.cat-title {
   min-width: 44px;
   min-height: 44px;
 }
-.scale4-opt input { position: absolute; opacity: 0; width: 0; height: 0; }
+/* Native radio fills the 44x44 tap target (opacity 0). Keeps it a real,
+   clickable, keyboard- and Playwright-actionable element while the .scale4-dot
+   renders the visible state. Not 0x0 — that would make it non-interactable. */
+.scale4-opt input { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: pointer; }
 .scale4-dot {
   width: 26px; height: 26px;
   border-radius: 50%;
   border: 2px solid var(--dot-border);
   background: #fff;
   transition: border-color 0.12s, background 0.12s, box-shadow 0.12s, transform 0.12s;
+  pointer-events: none; /* decorative; let clicks reach the overlaid radio */
 }
 .scale4-opt:hover .scale4-dot { border-color: var(--blue); transform: scale(1.08); }
 .scale4-opt input:checked + .scale4-dot {
