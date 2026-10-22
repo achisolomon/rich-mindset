@@ -1,0 +1,15 @@
+{
+  "name": "rich-mindset",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Financial-mindset self-assessment quiz (binary + 4-radio versions)",
+  "scripts": {
+    "serve": "python3 -c \"import functools; from http.server import HTTPServer, SimpleHTTPRequestHandler; HTTPServer(('127.0.0.1', 4321), functools.partial(SimpleHTTPRequestHandler, directory='.')).serve_forever()\"",
+    "test": "playwright test",
+    "test:ci": "CI=1 playwright test --workers=4"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "^4.10.0",
+    "@playwright/test": "^1.48.0"
+  }
+}
